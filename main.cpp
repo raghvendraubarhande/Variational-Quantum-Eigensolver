@@ -72,28 +72,28 @@ StateVector psi(state_size, Complex(0.0, 0.0));
 psi[0] = Complex(1.0, 0.0);
 psi[1] = Complex(0.0, 0.0);
 
-// --- 1. The Pauli-X Gate (NOT Gate) ---
+// Pauli-X Gate
 // Math: [[0, 1], [1, 0]]
 Matrix pauli_X = {
     {Complex(0.0, 0.0), Complex(1.0, 0.0)},
     {Complex(1.0, 0.0), Complex(0.0, 0.0)}
 };
 
-// --- 2. The Pauli-Y Gate ---
+// Pauli-Y Gate
 // Math: [[0, -i], [i, 0]]
 Matrix pauli_Y = {
-    {Complex(0.0, 0.0), Complex(0.0, -1.0)}, // Notice the -1.0 in the imaginary slot
+    {Complex(0.0, 0.0), Complex(0.0, -1.0)},
     {Complex(0.0, 1.0), Complex(0.0,  0.0)}
 };
 
-// --- 3. The Pauli-Z Gate (Phase Flip) ---
+// Pauli-Z Gate
 // Math: [[1, 0], [0, -1]]
 Matrix pauli_Z = {
     {Complex(1.0, 0.0),  Complex(0.0, 0.0)},
     {Complex(0.0, 0.0), Complex(-1.0, 0.0)}
 };
 
-// --- 4. The Hadamard Gate (Superposition) ---
+// Hadamard Gate
 // Math: 1/sqrt(2) * [[1, 1], [1, -1]]
 double inv_sqrt2 = 1.0 / std::sqrt(2.0);
 Matrix hadamard = {
@@ -101,10 +101,9 @@ Matrix hadamard = {
     {Complex(inv_sqrt2, 0.0), Complex(-inv_sqrt2, 0.0)}
 };
 
-// --- THE PYTHON FFI BRIDGE ---
+// Python FFI Bridge
 
 extern "C" {
-    // Add __declspec(dllexport) right before the return type
     __declspec(dllexport) double simulate_vqe_step(double theta) {
         
         Matrix pauli_Z = {
