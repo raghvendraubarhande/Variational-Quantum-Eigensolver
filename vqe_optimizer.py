@@ -4,7 +4,7 @@ import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
-# --- 1. Load the C++ Engine ---
+# 1. Load the C++ Engine
 dll_name = 'vqe_engine.dll'
 dll_path = os.path.join(os.path.abspath('.'), dll_name)
 vqe_engine = ctypes.CDLL(dll_path)
@@ -12,28 +12,27 @@ vqe_engine = ctypes.CDLL(dll_path)
 vqe_engine.simulate_vqe_step.argtypes = [ctypes.c_double]
 vqe_engine.simulate_vqe_step.restype = ctypes.c_double
 
-# --- 2. Data Tracking ---
+# 2. Data Tracking
 # This list will store the energy value at every single step
 energy_history = []
 
-# --- 3. Define the Cost Function ---
+# 3. Define the Cost Function
 def cost_function(params):
     theta = params[0]
     
     # Calculate energy via C++
     energy = vqe_engine.simulate_vqe_step(theta)
     
-    # Store the energy for our graph
+    # Store the energy for the graph
     energy_history.append(energy)
     
     print(f"Angle: {theta:>8.4f} rad | Energy: {energy:>8.4f}")
     return energy
 
-# --- 4. Execute the VQE Loop ---
+# 4. Execute the VQE Loop
 if __name__ == "__main__":
     print("--- Starting VQE Ground State Search ---")
     
-    # Let's start from a slightly worse guess to make the graph look more dramatic
     initial_guess = [0.5] 
     
     result = minimize(
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     print(f"Optimal Rotation Angle    : {result.x[0]:.6f} radians")
     print(f"Total Iterations          : {result.nfev}")
 
-    # --- 5. Generate the Convergence Graph ---
+    # 5. Generate the Convergence Graph
     plt.figure(figsize=(10, 6))
     
     # Plot the tracked energies
