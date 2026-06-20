@@ -26,11 +26,9 @@ Matrix getRyGate(double theta) {
 void applyGate(StateVector& state, const Matrix& gate) {
     
     // 1. Create a temporary vector initialized to zero
-    // This is critical. We cannot overwrite the original state while we are still calculating with it.
     StateVector new_state(state.size(), Complex(0.0, 0.0));
 
     // 2. The Matrix-Vector Multiplication Loop
-    // Loop through each row of the gate matrix
     for (int row = 0; row < 2; ++row) {
         // Loop through each column of the gate matrix
         for (int col = 0; col < 2; ++col) {
@@ -40,7 +38,6 @@ void applyGate(StateVector& state, const Matrix& gate) {
     }
 
     // 3. Update the physical state
-    // Replace the old vector with the newly calculated quantum state
     state = new_state;
 };
 // Calculates the inner product <bra | ket>
@@ -106,16 +103,6 @@ Matrix hadamard = {
 
 // --- THE PYTHON FFI BRIDGE ---
 
-// Define your static Pauli-Z Hamiltonian globally or locally inside the wrapper
-// Matrix pauli_Z = {
-//     {Complex(1.0, 0.0),  Complex(0.0, 0.0)},
-//     {Complex(0.0, 0.0), Complex(-1.0, 0.0)}
-// };
-}
-
-// Wrap the export function in extern "C"
-// --- THE PYTHON FFI BRIDGE ---
-
 extern "C" {
     // Add __declspec(dllexport) right before the return type
     __declspec(dllexport) double simulate_vqe_step(double theta) {
@@ -134,15 +121,3 @@ extern "C" {
         return getExpectationValue(psi, pauli_Z);
     }
 };
-
-
-// 3. Apply the Gate and Print
-    // Call the function on its own line, passing the full 'psi' vector
-//     applyGate(psi, getRyGate(M_PI / 4.0)); 
-    
-//     // Print the elements of the resulting vector
-//     std::cout << "State after Ry(pi/4):" << std::endl;
-//     std::cout << "Amplitude |0>: " << psi[0] << std::endl;
-//     std::cout << "Amplitude |1>: " << psi[1] << std::endl;
-//     std::cout << "Expected Energy <psi|H|psi>: " << getExpectationValue(psi, pauli_Z) << std::endl;
-// }
