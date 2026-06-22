@@ -1,0 +1,84 @@
+#include <iostream>
+#include <vector>
+#include <complex>
+#include <cmath>
+
+using Complex = std::complex<double>;
+using StateVector = std::vector<Complex>;
+using Matrix = std::vector<std::vector<Complex>>;
+
+// Function to dynamically generate an Ry gate based on an input angle
+Matrix getRyGate(double theta) {
+    // 1. Calculate the half-angle once to save CPU cycles
+    double half_theta = theta / 2.0;
+
+    // 2. Pre-compute the sine and cosine
+    double cos_val = std::cos(half_theta);
+    double sin_val = std::sin(half_theta);
+
+    // 3. Construct and return the 2x2 unitary matrix
+    return {
+        {Complex(cos_val, 0.0),  Complex(-sin_val, 0.0)},
+        {Complex(sin_val, 0.0),  Complex(cos_val, 0.0)}
+    };
+};
+// Applies a 2x2 unitary matrix to a 1-qubit state vector
+void applyGate(StateVector& state, const Matrix& gate) {
+    
+    // 1. Create a temporary vector initialized to zero
+    StateVector new_state(state.size(), Complex(0.0, 0.0));
+
+    // 2. The Matrix-Vector Multiplication Loop
+    for (int row = 0; row < 2; ++row) {
+        for (int col = 0; col < 2; ++col) {
+            // new_state[row] += U[row][col] * original_state[col]
+            new_state[row] += gate[row][col] * state[col];
+        }
+    }
+
+    // 3. Update the physical state
+    state = new_state;
+};
+// Calculates the inner product <bra | ket>
+Complex innerProduct(const StateVector& bra, const StateVector& ket) {
+    Complex result(0.0, 0.0);
+    for (size_t i = 0; i < bra.size(); ++i) {
+        // Multiply the complex conjugate of the Bra element by the Ket element
+        result += std::conj(bra[i]) * ket[i];
+    }
+    return result;
+};
+// Calculates <psi | H | psi>
+double getExpectationValue(const StateVector& psi, const Matrix& hamiltonian) {
+    // 1. Create a copy of psi so we don't destroy the original state
+    StateVector temp_ket = psi;
+    
+    // 2. Calculate H | psi> (This updates temp_ket)
+    applyGate(temp_ket, hamiltonian);
+    
+    // 3. Calculate <psi | temp_ket>
+    Complex energy = innerProduct(psi, temp_ket);
+    
+    // 4. Return just the real part, as physical energy must be real
+    return energy.real();
+};
+
+// Python FFI Bridge
+
+extern "C" {
+    __declspec(dllexport) double simulate_vqe_step(double theta) {
+        
+        Matrix pauli_Z = {
+            {Complex(1.0, 0.0),  Complex(0.0, 0.0)},
+            {Complex(0.0, 0.0), Complex(-1.0, 0.0)}
+        };
+
+        StateVector psi(2, Complex(0.0, 0.0));
+        psi[0] = Complex(1.0, 0.0);
+
+        Matrix ry_gate = getRyGate(theta);
+        applyGate(psi, ry_gate);
+
+        return getExpectationValue(psi, pauli_Z);
+    }
+};
